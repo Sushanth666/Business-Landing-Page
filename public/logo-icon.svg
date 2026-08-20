@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Top Circle Pin -->
+  <circle
+    cx="16"
+    cy="6.5"
+    r="2.8"
+    stroke="#FF4820"
+    stroke-width="2.4"
+    fill="none"
+  />
+  <!-- Center Vertical Pin Line -->
+  <path
+    d="M16 10V20"
+    stroke="#FF4820"
+    stroke-width="2.4"
+    stroke-linecap="round"
+  />
+  <!-- Outer U Cradle -->
+  <path
+    d="M7 11.5V19C7 24 11 28 16 28C21 28 25 24 25 19V11.5"
+    stroke="#FF4820"
+    stroke-width="2.4"
+    stroke-linecap="round"
+  />
+  <!-- Inner U Arc -->
+  <path
+    d="M11 15V19C11 21.8 13.2 24 16 24C18.8 24 21 21.8 21 19V15"
+    stroke="#FF4820"
+    stroke-width="2.2"
+    stroke-linecap="round"
+  />
+</svg>
