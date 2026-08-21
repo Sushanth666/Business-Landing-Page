@@ -10,10 +10,17 @@ import { CtaBanner } from '../components/landing/CtaBanner';
 export const LandingPage = ({
   onOpenSchedule,
   onOpenDemo,
+  user,
+  onOpenProfile,
 }) => {
   return (
     <main>
-      <Hero onOpenSchedule={onOpenSchedule} onOpenDemo={onOpenDemo} />
+      <Hero
+        onOpenSchedule={onOpenSchedule}
+        onOpenDemo={onOpenDemo}
+        user={user}
+        onOpenProfile={onOpenProfile}
+      />
       <LogoCloud />
       <FeatureShowcase />
       <ProductValues />
@@ -23,3 +30,4 @@ export const LandingPage = ({
     </main>
   );
 };
+

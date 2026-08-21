@@ -1,15 +1,49 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail, ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowLeft, CheckCircle2, ShieldCheck, UserCheck, LogOut } from 'lucide-react';
 import { Logo } from '../components/common/Logo';
 
-export const LoginPage = ({ onNavigate }) => {
+export const LoginPage = ({ onNavigate, onLoginSuccess, user, onLogout }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [loggedInName, setLoggedInName] = useState('');
+
+  // Helper to format email into a clean display name
+  const formatNameFromEmail = (rawEmail) => {
+    try {
+      const storedUsers = JSON.parse(localStorage.getItem('undefine_registered_users') || '[]');
+      const matched = storedUsers.find(u => u.email.toLowerCase() === rawEmail.toLowerCase());
+      if (matched && matched.name) return matched.name;
+    } catch {
+      // ignore
+    }
+    const local = rawEmail.split('@')[0];
+    return local
+      .replace(/[._-]/g, ' ')
+      .split(' ')
+      .filter(Boolean)
+      .map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+      .join(' ') || 'Alex Morgan';
+  };
+
+  const handleLoginUser = (userData) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setIsSuccess(true);
+      setLoggedInName(userData.name);
+      if (onLoginSuccess) {
+        onLoginSuccess(userData);
+      }
+      setTimeout(() => {
+        onNavigate('landing');
+      }, 1400);
+    }, 800);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,14 +54,29 @@ export const LoginPage = ({ onNavigate }) => {
       return;
     }
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-      setTimeout(() => {
-        onNavigate('landing');
-      }, 1500);
-    }, 1000);
+    const userName = formatNameFromEmail(email);
+    const userData = {
+      name: userName,
+      email: email.trim(),
+      role: 'Founder & CEO',
+      company: 'Enterprise Workspace',
+      plan: '14-Day Free Trial',
+      joinedAt: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    };
+
+    handleLoginUser(userData);
+  };
+
+  const handleSocialLogin = (provider) => {
+    const userData = {
+      name: provider === 'Google' ? 'Sarah Jenkins' : 'David Miller',
+      email: provider === 'Google' ? 'sarah.jenkins@company.com' : 'david.m@github.dev',
+      role: provider === 'Google' ? 'Product Director' : 'Lead Engineer',
+      company: provider === 'Google' ? 'Apex Innovations' : 'DevOps Studio',
+      plan: 'Pro Plan Active',
+      joinedAt: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    };
+    handleLoginUser(userData);
   };
 
   return (
@@ -42,33 +91,82 @@ export const LoginPage = ({ onNavigate }) => {
         <div onClick={() => onNavigate('landing')} className="cursor-pointer">
           <Logo size="md" />
         </div>
-
-        <button
-          onClick={() => onNavigate('landing')}
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#64748B] hover:text-[#FF4820] transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Home</span>
-        </button>
       </header>
 
       {/* Main Login Card */}
       <main className="flex-1 flex items-center justify-center py-10 z-10">
         <div className="w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 shadow-[0_16px_50px_rgba(0,0,0,0.05)] border border-slate-100 relative">
           
+          {/* Back to Home button at top-left inside card */}
+          {!isSuccess && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => onNavigate('landing')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#64748B] hover:text-[#FF4820] bg-slate-50 hover:bg-orange-50/80 px-3 py-1.5 rounded-full border border-slate-200/80 hover:border-[#FF4820]/30 transition-all cursor-pointer shadow-2xs group"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#FF4820] group-hover:-translate-x-0.5 transition-transform" />
+                <span>Back to Home</span>
+              </button>
+            </div>
+          )}
+
           {isSuccess ? (
-            <div className="py-12 text-center space-y-4 animate-in fade-in zoom-in duration-300">
-              <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-xs">
-                <CheckCircle2 className="w-9 h-9" />
+            <div className="py-10 text-center space-y-4 animate-in fade-in zoom-in duration-300">
+              <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-xs border border-emerald-100">
+                <CheckCircle2 className="w-9 h-9 text-emerald-500" />
               </div>
-              <h2 className="text-2xl font-black text-[#1E2022]">Welcome Back!</h2>
-              <p className="text-xs sm:text-sm text-slate-400">
-                You have successfully signed in. Redirecting to dashboard...
+              <h2 className="text-2xl font-black text-[#1E2022]">Welcome Back, {loggedInName}!</h2>
+              <p className="text-xs sm:text-sm text-slate-500 max-w-xs mx-auto">
+                Authentication successful. Loading your workspace and redirecting to homepage...
               </p>
+            </div>
+          ) : user ? (
+            /* If already logged in */
+            <div className="py-4 text-center space-y-5 animate-in fade-in">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FF4820] to-[#FF7A50] text-white flex items-center justify-center font-black text-2xl mx-auto shadow-md">
+                {user.name.charAt(0)}
+              </div>
+              <div>
+                <span className="text-[11px] font-bold tracking-widest text-emerald-600 uppercase bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                  Currently Signed In
+                </span>
+                <h2 className="text-2xl font-black text-[#1E2022] mt-2">{user.name}</h2>
+                <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-left text-xs space-y-1.5 text-slate-600">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Plan:</span>
+                  <span className="font-bold text-slate-700">{user.plan || 'Free Trial'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Company:</span>
+                  <span className="font-bold text-slate-700">{user.company || 'Personal Org'}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('landing')}
+                  className="w-full py-3.5 text-sm font-bold text-white bg-[#FF4820] hover:bg-[#E03A12] rounded-xl shadow-md transition-colors cursor-pointer"
+                >
+                  Continue to Workspace
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onLogout?.()}
+                  className="w-full py-2.5 text-xs font-semibold text-slate-600 hover:text-red-600 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Switch account / Sign out</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div>
-              <div className="text-center mb-8">
+              <div className="text-center mb-7">
                 <p className="text-[11px] sm:text-xs font-bold tracking-widest text-[#64748B] uppercase mb-2">
                   AUTHENTICATION
                 </p>
@@ -185,7 +283,7 @@ export const LoginPage = ({ onNavigate }) => {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => alert('Google authentication simulated.')}
+                  onClick={() => handleSocialLogin('Google')}
                   className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-xs font-semibold text-slate-700 cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -199,7 +297,7 @@ export const LoginPage = ({ onNavigate }) => {
 
                 <button
                   type="button"
-                  onClick={() => alert('GitHub authentication simulated.')}
+                  onClick={() => handleSocialLogin('GitHub')}
                   className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-xs font-semibold text-slate-700 cursor-pointer"
                 >
                   <svg className="w-4 h-4 fill-slate-900" viewBox="0 0 24 24">
@@ -235,3 +333,4 @@ export const LoginPage = ({ onNavigate }) => {
     </div>
   );
 };
+

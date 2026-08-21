@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail, User, ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, ArrowLeft, CheckCircle2, ShieldCheck, LogOut } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Logo } from '../components/common/Logo';
 
-export const SignupPage = ({ onNavigate }) => {
+export const SignupPage = ({ onNavigate, onLoginSuccess, user, onLogout }) => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -22,6 +22,38 @@ export const SignupPage = ({ onNavigate }) => {
   };
 
   const strength = getPasswordStrength();
+
+  const handleRegisterUser = (userData) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      // Save to registered users list in localStorage
+      try {
+        const storedUsers = JSON.parse(localStorage.getItem('undefine_registered_users') || '[]');
+        const filtered = storedUsers.filter(u => u.email.toLowerCase() !== userData.email.toLowerCase());
+        filtered.push(userData);
+        localStorage.setItem('undefine_registered_users', JSON.stringify(filtered));
+      } catch {
+        // ignore
+      }
+
+      setIsLoading(false);
+      setIsSuccess(true);
+      confetti({
+        particleCount: 90,
+        spread: 75,
+        origin: { y: 0.6 },
+        colors: ['#FF4820', '#10B981', '#6366F1', '#F59E0B'],
+      });
+
+      if (onLoginSuccess) {
+        onLoginSuccess(userData);
+      }
+
+      setTimeout(() => {
+        onNavigate('landing');
+      }, 1600);
+    }, 900);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -42,20 +74,28 @@ export const SignupPage = ({ onNavigate }) => {
       return;
     }
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#FF4820', '#10B981', '#6366F1', '#F59E0B'],
-      });
-      setTimeout(() => {
-        onNavigate('landing');
-      }, 2000);
-    }, 1200);
+    const userData = {
+      name: fullName.trim(),
+      email: email.trim(),
+      role: 'Founder & CEO',
+      company: `${fullName.trim().split(' ')[0]}'s Workspace`,
+      plan: '14-Day Free Trial',
+      joinedAt: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    };
+
+    handleRegisterUser(userData);
+  };
+
+  const handleSocialSignup = (provider) => {
+    const userData = {
+      name: provider === 'Google' ? 'Alex Rivera' : 'Taylor Chen',
+      email: provider === 'Google' ? 'alex.rivera@gmail.com' : 'taylor.chen@github.io',
+      role: 'Business Owner',
+      company: provider === 'Google' ? 'Rivera Global' : 'Chen Engineering',
+      plan: '14-Day Free Trial',
+      joinedAt: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    };
+    handleRegisterUser(userData);
   };
 
   return (
@@ -70,29 +110,67 @@ export const SignupPage = ({ onNavigate }) => {
         <div onClick={() => onNavigate('landing')} className="cursor-pointer">
           <Logo size="md" />
         </div>
-
-        <button
-          onClick={() => onNavigate('landing')}
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#64748B] hover:text-[#FF4820] transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Home</span>
-        </button>
       </header>
 
       {/* Main Signup Form */}
       <main className="flex-1 flex items-center justify-center py-8 z-10">
         <div className="w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 shadow-[0_16px_50px_rgba(0,0,0,0.05)] border border-slate-100 relative">
           
+          {/* Back to Home button at top-left inside card */}
+          {!isSuccess && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => onNavigate('landing')}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#64748B] hover:text-[#FF4820] bg-slate-50 hover:bg-orange-50/80 px-3 py-1.5 rounded-full border border-slate-200/80 hover:border-[#FF4820]/30 transition-all cursor-pointer shadow-2xs group"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#FF4820] group-hover:-translate-x-0.5 transition-transform" />
+                <span>Back to Home</span>
+              </button>
+            </div>
+          )}
+
           {isSuccess ? (
-            <div className="py-12 text-center space-y-4 animate-in fade-in zoom-in duration-300">
-              <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-xs">
-                <CheckCircle2 className="w-9 h-9" />
+            <div className="py-10 text-center space-y-4 animate-in fade-in zoom-in duration-300">
+              <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-xs border border-emerald-100">
+                <CheckCircle2 className="w-9 h-9 text-emerald-500" />
               </div>
               <h2 className="text-2xl font-black text-[#1E2022]">Account Created!</h2>
-              <p className="text-xs sm:text-sm text-slate-400">
-                Welcome to Undefine, <span className="font-semibold text-slate-700">{fullName}</span>! Preparing your workspace...
+              <p className="text-xs sm:text-sm text-slate-500 max-w-xs mx-auto">
+                Welcome to Undefine, <span className="font-bold text-slate-800">{fullName || 'there'}</span>! Your 14-day trial has been activated.
               </p>
+            </div>
+          ) : user ? (
+            /* If already logged in */
+            <div className="py-4 text-center space-y-5 animate-in fade-in">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FF4820] to-[#FF7A50] text-white flex items-center justify-center font-black text-2xl mx-auto shadow-md">
+                {user.name.charAt(0)}
+              </div>
+              <div>
+                <span className="text-[11px] font-bold tracking-widest text-emerald-600 uppercase bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                  Already Registered
+                </span>
+                <h2 className="text-2xl font-black text-[#1E2022] mt-2">{user.name}</h2>
+                <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('landing')}
+                  className="w-full py-3.5 text-sm font-bold text-white bg-[#FF4820] hover:bg-[#E03A12] rounded-xl shadow-md transition-colors cursor-pointer"
+                >
+                  Return to Homepage
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onLogout?.()}
+                  className="w-full py-2.5 text-xs font-semibold text-slate-600 hover:text-red-600 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Log out to register a new account</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div>
@@ -256,7 +334,7 @@ export const SignupPage = ({ onNavigate }) => {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => alert('Google signup simulated.')}
+                  onClick={() => handleSocialSignup('Google')}
                   className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-xs font-semibold text-slate-700 cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -270,7 +348,7 @@ export const SignupPage = ({ onNavigate }) => {
 
                 <button
                   type="button"
-                  onClick={() => alert('GitHub signup simulated.')}
+                  onClick={() => handleSocialSignup('GitHub')}
                   className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-xs font-semibold text-slate-700 cursor-pointer"
                 >
                   <svg className="w-4 h-4 fill-slate-900" viewBox="0 0 24 24">
@@ -306,3 +384,4 @@ export const SignupPage = ({ onNavigate }) => {
     </div>
   );
 };
+

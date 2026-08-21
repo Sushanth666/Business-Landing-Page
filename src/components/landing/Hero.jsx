@@ -1,7 +1,8 @@
 import React from 'react';
+import { Sparkles, ArrowRight, UserCheck } from 'lucide-react';
 import heroManCutout from '../../assets/hero_man_cutout.png';
 
-export const Hero = ({ onOpenSchedule, onOpenDemo }) => {
+export const Hero = ({ onOpenSchedule, onOpenDemo, user, onOpenProfile }) => {
   return (
     <section id="home" className="relative pt-32 sm:pt-36 lg:pt-40 pb-8 lg:pb-0 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
@@ -10,10 +11,26 @@ export const Hero = ({ onOpenSchedule, onOpenDemo }) => {
           {/* Left Text Column */}
           <div className="lg:col-span-6 space-y-6 text-left z-10 lg:pr-2 py-6">
             
-            {/* Kicker: BUILD YOUR PLAN */}
-            <p className="text-xs sm:text-sm font-semibold tracking-wider text-[#64748B] uppercase">
-              BUILD YOUR PLAN
-            </p>
+            {/* User Logged-in Welcome Badge or Default Kicker */}
+            {user ? (
+              <div
+                onClick={() => onOpenProfile?.()}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 hover:bg-orange-100 border border-orange-200/80 transition-all cursor-pointer shadow-2xs group"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-[#FF4820]">
+                  Welcome back, {user.name}
+                </span>
+                <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+                  • {user.plan || 'Workspace Active'}
+                </span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+              </div>
+            ) : (
+              <p className="text-xs sm:text-sm font-semibold tracking-wider text-[#64748B] uppercase">
+                BUILD YOUR PLAN
+              </p>
+            )}
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-[#1E2022] tracking-tight leading-[1.12]">
@@ -30,19 +47,20 @@ export const Hero = ({ onOpenSchedule, onOpenDemo }) => {
 
             {/* Subtext */}
             <div className="text-sm sm:text-base text-[#94A3B8] max-w-lg leading-relaxed space-y-1">
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-              <p>Imperdiet tempus felis vitae sit est quisque.</p>
+              <p>Scale faster with automated sales funnels, unified analytics, and high-converting marketing tools.</p>
+              <p>Everything your team needs to launch, grow, and monetize in one place.</p>
             </div>
 
             {/* Action Buttons Row */}
             <div className="flex items-center gap-6 pt-2">
-              {/* Primary: Get Started - For Free */}
+              {/* Primary CTA */}
               <button
                 onClick={onOpenSchedule}
                 id="hero-get-started-btn"
-                className="px-7 py-3.5 text-sm font-bold text-white bg-[#FF4820] hover:bg-[#E03A12] rounded-xl shadow-xs hover:shadow-md transition-all duration-200 active:scale-95 whitespace-nowrap cursor-pointer"
+                className="px-7 py-3.5 text-sm font-bold text-white bg-[#FF4820] hover:bg-[#E03A12] rounded-xl shadow-xs hover:shadow-md transition-all duration-200 active:scale-95 whitespace-nowrap cursor-pointer flex items-center gap-2"
               >
-                Get Started - For Free
+                <span>{user ? 'Book Strategy Call' : 'Get Started - For Free'}</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
 
               {/* Secondary: Circular Light Gray Play Icon + Watch Demo */}
@@ -92,3 +110,4 @@ export const Hero = ({ onOpenSchedule, onOpenDemo }) => {
     </section>
   );
 };
+

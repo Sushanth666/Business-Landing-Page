@@ -1,7 +1,7 @@
 import React from 'react';
 import { Logo } from './Logo';
 
-export const Footer = ({ onNavigate }) => {
+export const Footer = ({ onNavigate, user, onOpenProfile, onLogout }) => {
   return (
     <footer className="bg-white pt-14 pb-10 text-slate-500 border-t border-slate-100">
       <div className="max-w-6xl mx-auto px-4 sm:px-8 lg:px-12">
@@ -18,7 +18,7 @@ export const Footer = ({ onNavigate }) => {
           </div>
 
           {/* Links */}
-          <div className="flex items-center gap-8 text-xs sm:text-sm font-semibold text-[#64748B]">
+          <div className="flex items-center gap-6 sm:gap-8 text-xs sm:text-sm font-semibold text-[#64748B] flex-wrap justify-center">
             <a href="#features" className="hover:text-[#FF4820] transition-colors">
               About
             </a>
@@ -31,13 +31,30 @@ export const Footer = ({ onNavigate }) => {
             <a href="#how-it-works" className="hover:text-[#FF4820] transition-colors">
               Portfolio
             </a>
-            {onNavigate && (
-              <button
-                onClick={() => onNavigate('login')}
-                className="hover:text-[#FF4820] transition-colors cursor-pointer"
-              >
-                Sign In
-              </button>
+            {user ? (
+              <>
+                <button
+                  onClick={() => onOpenProfile?.()}
+                  className="hover:text-[#FF4820] transition-colors cursor-pointer text-[#FF4820] font-bold"
+                >
+                  My Account
+                </button>
+                <button
+                  onClick={() => onLogout?.()}
+                  className="hover:text-red-600 transition-colors cursor-pointer text-slate-400"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              onNavigate && (
+                <button
+                  onClick={() => onNavigate('login')}
+                  className="hover:text-[#FF4820] transition-colors cursor-pointer"
+                >
+                  Sign In
+                </button>
+              )
             )}
           </div>
 
@@ -100,7 +117,7 @@ export const Footer = ({ onNavigate }) => {
 
         {/* Sub-Footer Row */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#94A3B8]">
-          <p>© Copyright 2022. All Rights Reserved</p>
+          <p>© Copyright 2026. All Rights Reserved</p>
           
           <div className="flex items-center gap-6">
             <a href="#privacy" className="hover:text-slate-700 transition-colors">
@@ -116,3 +133,4 @@ export const Footer = ({ onNavigate }) => {
     </footer>
   );
 };
+
